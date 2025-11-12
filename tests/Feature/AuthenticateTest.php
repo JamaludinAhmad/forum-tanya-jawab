@@ -85,4 +85,28 @@ class AuthenticateTest extends TestCase
         $response->assertRedirect('/login');
         $this->assertGuest();
     }
+
+    public function test_guest_can_view_register_page(): void
+    {
+        $response = $this->get('/register');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_guest_can_register(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'test user',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'newuser@example.com',
+        ]);
+
+        $response->assertRedirect('/login');
+        $this->assertGuest();
+    }
 }
