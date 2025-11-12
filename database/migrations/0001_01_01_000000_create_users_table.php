@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->integer('umur');
+            $table->text('biodata');
+            $table->string('alamat', 255);
             $table->rememberToken();
             $table->timestamps();
         });
