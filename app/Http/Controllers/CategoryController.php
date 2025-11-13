@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class CategoryController extends Controller
 {
@@ -12,7 +13,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $categories = Category::orderBy('name')->get();
+
+        return view('categories.index', compact('categories'));
     }
 
     /**
@@ -20,7 +23,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        return view('categories.create');
     }
 
     /**
@@ -28,7 +31,13 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100', 'unique:categories,name'],
+        ]);
+
+        Category::create($validated);
+
+        return Redirect::route('categories.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
 
     /**
@@ -36,7 +45,7 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        //
+        return Redirect::route('categories.edit', $category);
     }
 
     /**
@@ -44,7 +53,7 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        //
+        return view('categories.edit', compact('category'));
     }
 
     /**
@@ -52,7 +61,13 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100', 'unique:categories,name,' . $category->id],
+        ]);
+
+        $category->update($validated);
+
+        return Redirect::route('categories.index')->with('success', 'Kategori berhasil diperbarui.');
     }
 
     /**
@@ -60,6 +75,9 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        $category->questions()->detach();
+        $category->delete();
+
+        return Redirect::route('categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
 }

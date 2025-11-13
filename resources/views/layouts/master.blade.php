@@ -6,6 +6,10 @@
     <title>@yield('title')</title>
     <link href="{{ asset('dist/css/adminlte.min.css') }}" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/summernote/summernote-bs4.min.css') }}">
+    @stack('styles')
   </head>
   <body>
     <!-- Navbar -->
@@ -131,7 +135,7 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
-      <a href="index3.html" class="brand-link">
+          <a href="{{ url('/') }}" class="brand-link">
         <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
             style="opacity: .8">
         <span class="brand-text font-weight-light">Forum tanya tanya</span>
@@ -151,39 +155,23 @@
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">
-          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-            <!-- Add icons to the links using the .nav-icon class
-                with font-awesome or any other icon font library -->
+          <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
             <li class="nav-item">
-              <a href="#" class="nav-link active">
-                <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>
-                  My Questions
-                  <i class="right fas fa-angle-left"></i>
-                </p>
+              <a href="{{ route('questions.index') }}" class="nav-link {{ request()->routeIs('questions.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-question-circle"></i>
+                <p>Pertanyaan Saya</p>
               </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="#" class="nav-link active">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Active Page</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="#" class="nav-link">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Inactive Page</p>
-                  </a>
-                </li>
-              </ul>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-th"></i>
-                <p>
-                  Simple Link
-                  <span class="right badge badge-danger">New</span>
-                </p>
+              <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-tags"></i>
+                <p>Kategori</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('profile.show') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-user"></i>
+                <p>Profil Saya</p>
               </a>
             </li>
           </ul>
@@ -193,10 +181,51 @@
       <!-- /.sidebar -->
     </aside>
     <main class="content-wrapper p-4">
-      @yield('content')
+      <div class="container-fluid">
+        @yield('content')
+      </div>
     </main>
     <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.js') }}"></script>
     <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/summernote/summernote-bs4.min.js') }}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const successMessage = @json(session('success'));
+        const errorMessage = @json(session('error'));
+        const validationErrors = @json($errors->all());
+
+        if (successMessage) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: successMessage,
+            confirmButtonText: 'OK'
+          });
+        }
+
+        if (errorMessage) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: errorMessage,
+            confirmButtonText: 'OK'
+          });
+        }
+
+        if (validationErrors && validationErrors.length > 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Periksa Kembali',
+            html: validationErrors.map(item => `<div>${item}</div>`).join(''),
+            confirmButtonText: 'Baik'
+          });
+        }
+      });
+    </script>
+    @stack('scripts')
   </body>
 </html>
