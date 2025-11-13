@@ -13,7 +13,9 @@ class Answer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'text'
+        'text',
+        'question_id',
+        'user_id',
     ];
 
     public function users(): BelongsTo
