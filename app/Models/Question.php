@@ -14,9 +14,10 @@ class Question extends Model
     use HasFactory;
 
     protected $fillable = [
-        'text',
+        'body',
         'title',
-        'image_url'
+        'image_url',
+        'user_id',
     ];
 
     public function users(): BelongsTo
