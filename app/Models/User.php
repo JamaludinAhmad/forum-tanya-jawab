@@ -29,12 +29,12 @@ class User extends Authenticatable
 
     public function questions(): HasMany
     {
-        return $this->hasMany(Question::class, 'profile_id');
+        return $this->hasMany(Question::class, 'user_id');
     }
 
     public function answers(): HasMany
     {
-        return $this->hasMany(Answer::class, 'profile_id');
+        return $this->hasMany(Answer::class, 'user_id');
     }
 
     /**

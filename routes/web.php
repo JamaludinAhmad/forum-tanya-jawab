@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,5 +35,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/questions/{question}/answers', [AnswerController::class, 'store'])->name('answers.store');
     Route::put('/answers/{answer}', [AnswerController::class, 'update'])->name('answers.update');  
     Route::delete('/answers/{answer}', [AnswerController::class, 'destroy'])->name('answers.destroy');
+
+    Route::resource('categories', CategoryController::class)->except(['show']);
+
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
