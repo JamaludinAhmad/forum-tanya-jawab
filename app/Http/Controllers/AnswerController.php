@@ -27,8 +27,12 @@ class AnswerController extends Controller
 
     public function update(Request $request, Answer $answer)
     {
-        //
-        // dd($answer->id);
+        if ($answer->user_id !== Auth::id()) {
+            return redirect()->route('questions.show', $answer->question_id)->with('error', 'You are not authorized to update this answer.');
+        }
+
+        $question = $answer->question;
+
         $updated_answer = $request->validate([
             'text' => 'required|string',
         ]);
@@ -36,9 +40,7 @@ class AnswerController extends Controller
             'text' => $updated_answer['text'],
         ]);
         
-        $answer->load('questions');
-
-        return redirect()->route('questions.show', $answer->questions)->with('success', 'Answer updated successfully.');
+        return redirect()->route('questions.show', $question)->with('success', 'Answer updated successfully.');
     }
 
     /**
@@ -46,10 +48,14 @@ class AnswerController extends Controller
      */
     public function destroy(Answer $answer)
     {
-        //
+        $question = $answer->question;
+
+        if ($answer->user_id !== Auth::id()) {
+            return redirect()->route('questions.show', $answer->question_id)->with('error', 'You are not authorized to delete this answer.');
+        }
 
         $answer->delete();
 
-        return redirect()->route('questions.show', $answer->questions)->with('success', 'Answer deleted successfully.');    
+        return redirect()->route('questions.show', $question)->with('success', 'Answer deleted successfully.');    
     }
 }

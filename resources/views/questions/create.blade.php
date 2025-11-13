@@ -7,7 +7,7 @@
     <div class="col-md-8">
       <h1 class="mb-4">Buat Pertanyaan Baru</h1>
       
-      <form action="{{ route('questions.store') }}" method="POST">
+      <form action="{{ route('questions.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         <div class="mb-3">
@@ -30,22 +30,37 @@
         
         <div class="mb-3">
           <label for="category" class="form-label">Kategori</label>
-          <select class="form-control @error('category_id') is-invalid @enderror" 
-              id="category" name="category_id" required>
-            <option value="">Pilih Kategori</option>
+          <select
+            class="form-control @error('category_ids') is-invalid @enderror"
+            id="category"
+            name="category_ids[]"
+            multiple
+            required
+          >
             @foreach($categories as $category)
-              <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+              <option value="{{ $category->id }}" {{ in_array($category->id, old('category_ids', [])) ? 'selected' : '' }}>
                 {{ $category->name }}
               </option>
             @endforeach
           </select>
-          @error('category_id')
-            <div class="invalid-feedback">{{ $message }}</div>
+          <small class="text-muted">Pilih satu atau lebih kategori.</small>
+          @error('category_ids')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
           @enderror
         </div>
-        <div>
-          <label for="image">Gambar (Opsional):</label>
-          <input type="file" name="image" id="image">
+        <div class="mb-3">
+          <label for="image" class="form-label">Gambar (Opsional)</label>
+          <input
+            type="file"
+            name="image"
+            id="image"
+            class="form-control @error('image') is-invalid @enderror"
+            accept="image/*"
+          >
+          @error('image')
+            <div class="invalid-feedback">{{ $message }}</div>
+          @enderror
+          <small class="text-muted">Maksimal ukuran file 2MB.</small>
         </div>
         
         <div class="d-flex gap-2">
@@ -58,3 +73,14 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+  $(function () {
+    $('#body').summernote({
+      height: 200,
+      placeholder: 'Tulis pertanyaan Anda di sini...'
+    });
+  });
+</script>
+@endpush

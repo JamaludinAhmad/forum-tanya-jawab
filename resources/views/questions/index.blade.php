@@ -51,14 +51,14 @@
                     <tr>
                       <td>{{ $loop->iteration + ($questions->currentPage()-1) * $questions->perPage() }}</td>
                       <td><a href="{{ route('questions.show', $question) }}">{{ $question->title }}</a></td>
-                      @forelse($question->categories as $category)
-                        <td>
-                          <span class="badge bg-info">{{ $category->name }}</span>
-                        </td>
-                      @empty
-                        <td><span class="badge bg-secondary">-</span></td>
-                      @endforelse
-                      <td>{{ $question->answers_count ?? $question->answers->count() }}</td>
+                      <td>
+                        @forelse($question->categories as $category)
+                          <span class="badge bg-info mr-1">{{ $category->name }}</span>
+                        @empty
+                          <span class="badge bg-secondary">-</span>
+                        @endforelse
+                      </td>
+                      <td>{{ $question->answers_count }}</td>
                       <td>{{ $question->created_at->diffForHumans() }}</td>
                       <td>
                         <a href="{{ route('questions.show', $question) }}" class="btn btn-l btn-info" title="Lihat"><i class="fas fa-eye"></i></a>

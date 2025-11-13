@@ -7,7 +7,7 @@
     <div class="col-md-8">
       <h1 class="mb-4">Edit Pertanyaan</h1>
       
-      <form action="{{ route('questions.update', $question->id) }}" method="POST">
+      <form action="{{ route('questions.update', $question->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         
@@ -31,22 +31,46 @@
         
         <div class="mb-3">
           <label for="category" class="form-label">Kategori</label>
-          <select class="form-control @error('category_id') is-invalid @enderror" 
-              id="category" name="category_id" required>
-            <option value="{{ $question->category_id }}">{{ $question->categories->first()->name ?? '-' }}</option>
+          <select
+            class="form-control @error('category_ids') is-invalid @enderror"
+            id="category"
+            name="category_ids[]"
+            multiple
+            required
+          >
+            @php
+              $selectedCategories = old('category_ids', $question->categories->pluck('id')->all());
+            @endphp
             @foreach($categories as $category)
-              <option value="{{ $category->id }}" {{ old('category_id', $question->category_id) == $category->id ? 'selected' : '' }}>
+              <option value="{{ $category->id }}" {{ in_array($category->id, $selectedCategories) ? 'selected' : '' }}>
                 {{ $category->name }}
               </option>
             @endforeach
           </select>
-          @error('category_id')
-            <div class="invalid-feedback">{{ $message }}</div>
+          <small class="text-muted">Pilih minimal satu kategori.</small>
+          @error('category_ids')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
           @enderror
         </div>
-        <div>
-          <label for="image">Gambar (Opsional):</label>
-          <input type="file" name="image" id="image">
+        <div class="mb-3">
+          <label for="image" class="form-label">Gambar (Opsional)</label>
+          <input
+            type="file"
+            name="image"
+            id="image"
+            class="form-control @error('image') is-invalid @enderror"
+            accept="image/*"
+          >
+          @error('image')
+            <div class="invalid-feedback">{{ $message }}</div>
+          @enderror
+          @if($question->image_url)
+            <div class="mt-2">
+              <span class="d-block text-muted mb-1">Gambar saat ini:</span>
+              <img src="{{ asset('storage/' . $question->image_url) }}" alt="Gambar pertanyaan" class="img-fluid rounded">
+            </div>
+          @endif
+          <small class="text-muted d-block mt-2">Unggah gambar baru untuk mengganti gambar lama (maks 2MB).</small>
         </div>
         
         <div class="d-flex gap-2">
@@ -59,3 +83,19 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+  $(function () {
+    $('#body').summernote({
+      height: 200,
+      toolbar: [
+        ['style', ['bold', 'italic', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['insert', ['link']],
+        ['view', ['fullscreen', 'codeview']]
+      ]
+    });
+  });
+</script>
+@endpush

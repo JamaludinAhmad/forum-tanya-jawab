@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Question;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class QuestionController extends Controller
 {
@@ -15,8 +15,12 @@ class QuestionController extends Controller
      */
     public function index()
     {
-        //
-        $questions = Question::where('user_id', Auth::user()->id)->paginate(10);
+        $questions = Question::with('categories')
+            ->where('user_id', Auth::id())
+            ->withCount('answers')
+            ->latest()
+            ->paginate(10);
+
         return view('questions.index', compact('questions'));
     }
 
@@ -25,7 +29,6 @@ class QuestionController extends Controller
      */
     public function create()
     {
-        //
         $categories = Category::all();
         return view('questions.create', compact('categories'));
     }
@@ -35,20 +38,27 @@ class QuestionController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $new_question = $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required|string',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:categories,id',
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        $user = Auth::user();
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('questions', 'public');
+        }
+
         $question = Question::create([
             'title' => $new_question['title'],
             'body' => $new_question['body'],
-            'user_id' => $user->id,
+            'image_url' => $imagePath,
+            'user_id' => Auth::id(),
         ]);
 
-        $question->categories()->attach($request->category_id);
+        $question->categories()->sync($new_question['category_ids']);
 
         return redirect()->route('questions.index')->with('success', 'Question created successfully.');
     }
@@ -58,8 +68,7 @@ class QuestionController extends Controller
      */
     public function show(Question $question)
     {
-        //
-        $question = Question::with(['users', 'answers.users'])->findOrFail($question->id);
+        $question->load(['users', 'categories', 'answers.user']);
         return view('questions.show', compact('question'));
 
     }
@@ -69,10 +78,13 @@ class QuestionController extends Controller
      */
     public function edit(Question $question)
     {
-        //
+        if ($question->user_id !== Auth::id()) {
+            return redirect()->route('questions.index')->with('error', 'You are not authorized to edit this question.');
+        }
+
+        $question->load('categories');
         $categories = Category::all();
 
-        $question->categories()->attach($question->categories);
         return view('questions.edit', compact('question', 'categories'));
         
     }
@@ -82,22 +94,31 @@ class QuestionController extends Controller
      */
     public function update(Request $request, Question $question)
     {
-        //
-        $user = Auth::user();
-        $old_question = Question::find($question->id);
-
-
-        if ($user->id !== $old_question->user_id) {
+        if (Auth::id() !== $question->user_id) {
             return redirect()->route('questions.index')->with('error', 'You are not authorized to edit this question.');
         }
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required|string',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:categories,id',
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        $new_question = array_merge($validatedData, ['user_id' => $user->id]);
-        
-        $old_question->update($new_question);
+        if ($request->hasFile('image')) {
+            if ($question->image_url) {
+                Storage::disk('public')->delete($question->image_url);
+            }
+            $question->image_url = $request->file('image')->store('questions', 'public');
+        }
+
+        $question->update([
+            'title' => $validatedData['title'],
+            'body' => $validatedData['body'],
+            'image_url' => $question->image_url,
+        ]);
+
+        $question->categories()->sync($validatedData['category_ids']);
 
         return redirect()->route('questions.index')->with('success', 'Question updated successfully.');
     }
@@ -107,13 +128,14 @@ class QuestionController extends Controller
      */
     public function destroy(Question $question)
     {
-        //
-        $user = Auth::user();
-        $old_question = Question::find($question->id);
-        if ($user->id !== $old_question->user_id) {
+        if (Auth::id() !== $question->user_id) {
             return redirect()->route('questions.index')->with('error', 'You are not authorized to delete this question.');
         }
-        $old_question->delete();
+        if ($question->image_url) {
+            Storage::disk('public')->delete($question->image_url);
+        }
+        $question->categories()->detach();
+        $question->delete();
         return redirect()->route('questions.index')->with('success', 'Question deleted successfully.');
     }
 }

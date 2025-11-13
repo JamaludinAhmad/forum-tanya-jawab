@@ -11,7 +11,19 @@
         <span>Dibuat oleh: <strong>{{ $question->users->name }}</strong></span> </br>
         <span class="ms-3">Tanggal: <strong>{{ $question->created_at->format('d M Y H:i') }}</strong></span>
       </div>
-      <p>{{ $question->body }}</p>
+      <div class="mb-3">
+        @forelse($question->categories as $category)
+          <span class="badge bg-info mr-1">{{ $category->name }}</span>
+        @empty
+          <span class="badge bg-secondary">Tanpa kategori</span>
+        @endforelse
+      </div>
+      @if($question->image_url)
+        <div class="mb-3">
+          <img src="{{ asset('storage/' . $question->image_url) }}" alt="Gambar pertanyaan" class="img-fluid rounded">
+        </div>
+      @endif
+      <div id='summernote'>{!! $question->body !!}</div>
     </div>
   </div>
 
@@ -21,7 +33,7 @@
     <div class="card mb-3">
       <div class="card-body" id="answer-view-{{ $answer->id }}">
         <div class="text-muted small mb-2">
-          <strong>{{ $answer->users->name }}</strong>
+          <strong>{{ $answer->user->name }}</strong>
         </div>
         <p>{{ $answer->text }}</p>
         @can('update-answer', $answer)
@@ -95,3 +107,7 @@
 
 </script>
 @endsection
+@push('scripts')
+
+</script>
+@endpush
