@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Question;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class QuestionController extends Controller
 {
@@ -13,6 +14,7 @@ class QuestionController extends Controller
     public function index()
     {
         //
+        return view('questions.index');
     }
 
     /**
@@ -21,6 +23,7 @@ class QuestionController extends Controller
     public function create()
     {
         //
+        return view('questions.create');
     }
 
     /**
@@ -29,6 +32,19 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         //
+        $new_question = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+        Question::create([
+            'title' => $new_question['title'],
+            'body' => $new_question['body'],
+            'user_id' => $user->id,
+        ]);
+
+        return redirect()->route('questions.index')->with('success', 'Question created successfully.');
     }
 
     /**
@@ -37,6 +53,9 @@ class QuestionController extends Controller
     public function show(Question $question)
     {
         //
+        $question = Question::findOrFail($question->id);
+        return view('questions.show', compact('question'));
+
     }
 
     /**
@@ -45,6 +64,9 @@ class QuestionController extends Controller
     public function edit(Question $question)
     {
         //
+        $question = Question::findOrFail($question->id);
+        return view('questions.edit', compact('question'));
+        
     }
 
     /**
@@ -53,6 +75,23 @@ class QuestionController extends Controller
     public function update(Request $request, Question $question)
     {
         //
+        $user = Auth::user();
+        $old_question = Question::find($question->id);
+
+
+        if ($user->id !== $old_question->user_id) {
+            return redirect()->route('questions.index')->with('error', 'You are not authorized to edit this question.');
+        }
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+        ]);
+
+        $new_question = array_merge($validatedData, ['user_id' => $user->id]);
+        
+        $old_question->update($new_question);
+
+        return redirect()->route('questions.index')->with('success', 'Question updated successfully.');
     }
 
     /**
@@ -61,5 +100,12 @@ class QuestionController extends Controller
     public function destroy(Question $question)
     {
         //
+        $user = Auth::user();
+        $old_question = Question::find($question->id);
+        if ($user->id !== $old_question->user_id) {
+            return redirect()->route('questions.index')->with('error', 'You are not authorized to delete this question.');
+        }
+        $old_question->delete();
+        return redirect()->route('questions.index')->with('success', 'Question deleted successfully.');
     }
 }
