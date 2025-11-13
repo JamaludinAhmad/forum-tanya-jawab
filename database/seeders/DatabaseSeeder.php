@@ -23,5 +23,6 @@ class DatabaseSeeder extends Seeder
             'umur' => 12,
             'password' => '123123123'
         ]);
+        $this->call(CategorySeeder::class);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Question;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +16,8 @@ class QuestionController extends Controller
     public function index()
     {
         //
-        return view('questions.index');
+        $questions = Question::where('user_id', Auth::user()->id)->paginate(10);
+        return view('questions.index', compact('questions'));
     }
 
     /**
@@ -23,7 +26,8 @@ class QuestionController extends Controller
     public function create()
     {
         //
-        return view('questions.create');
+        $categories = Category::all();
+        return view('questions.create', compact('categories'));
     }
 
     /**
@@ -38,11 +42,13 @@ class QuestionController extends Controller
         ]);
 
         $user = Auth::user();
-        Question::create([
+        $question = Question::create([
             'title' => $new_question['title'],
             'body' => $new_question['body'],
             'user_id' => $user->id,
         ]);
+
+        $question->categories()->attach($request->category_id);
 
         return redirect()->route('questions.index')->with('success', 'Question created successfully.');
     }
@@ -53,7 +59,7 @@ class QuestionController extends Controller
     public function show(Question $question)
     {
         //
-        $question = Question::findOrFail($question->id);
+        $question = Question::with(['users', 'answers.users'])->findOrFail($question->id);
         return view('questions.show', compact('question'));
 
     }
@@ -64,8 +70,10 @@ class QuestionController extends Controller
     public function edit(Question $question)
     {
         //
-        $question = Question::findOrFail($question->id);
-        return view('questions.edit', compact('question'));
+        $categories = Category::all();
+
+        $question->categories()->attach($question->categories);
+        return view('questions.edit', compact('question', 'categories'));
         
     }
 
