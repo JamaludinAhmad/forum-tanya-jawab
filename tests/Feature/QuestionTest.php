@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Question;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,10 +76,13 @@ class QuestionTest extends TestCase
     public function test_authenticated_user_can_create_question(): void
     {
         $user = User::factory()->create();
+        $category = Category::factory()->create();
+        $categoryIds = [$category->id];
 
         $response = $this->actingAs($user)->post('/questions', [
             'title' => 'Sample Question Title',
             'body' => 'This is a sample question body.',
+            'category_ids' => $categoryIds,
             'user_id' => $user->id,
         ]);
 
@@ -93,8 +97,10 @@ class QuestionTest extends TestCase
     public function test_user_can_edit_question(): void
     {
         $user = User::factory()->create();
+        
+        $category = Category::factory()->create();
+        $categoryIds = [$category->id];
 
-        // Implement test for editing a question
         $question = Question::factory()->create([
             'title' => 'Original Title',
             'body' => 'Original body content.',
@@ -109,8 +115,9 @@ class QuestionTest extends TestCase
         $response = $this->actingAs($user)->put('/questions/' . $question->id, [
             'title' => 'Updated Question Title',
             'body' => 'This is the updated question body.',
+            'category_ids' => $categoryIds, 
         ]);
-
+        
         $this->assertDatabaseHas('questions', [
             'title' => 'Updated Question Title',
             'body' => 'This is the updated question body.',
