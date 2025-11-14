@@ -18,9 +18,6 @@ Route::middleware(['guest'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // Protected routes for authenticated users can be added here
-    Route::get('/', function () {
-        return view('users.dashboard');
-    });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -40,5 +37,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/', [ProfileController::class, 'dashboard'])->name('dashboard');
 });
 

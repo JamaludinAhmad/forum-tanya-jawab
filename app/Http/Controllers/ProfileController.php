@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -9,6 +10,12 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
+    public function dashboard()
+    {
+        $questions = Question::latest()->take(10)->get();
+        return view('users.dashboard', compact('questions'));
+    }
+    
     public function show()
     {
         $user = Auth::user();
