@@ -22,7 +22,7 @@
         <div class="mb-3">
           <label for="body" class="form-label">Deskripsi</label>
           <textarea class="form-control @error('body') is-invalid @enderror" 
-                id="body" name="body" rows="5" required>{{ old('body') }}</textarea>
+                id="myeditorinstance" name="body" rows="5">{{ old('body') }}</textarea>
           @error('body')
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
@@ -73,14 +73,3 @@
 </div>
 
 @endsection
-
-@push('scripts')
-<script>
-  $(function () {
-    $('#body').summernote({
-      height: 200,
-      placeholder: 'Tulis pertanyaan Anda di sini...'
-    });
-  });
-</script>
-@endpush
